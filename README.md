@@ -1,4 +1,4 @@
-# EvalLab · 内容评测工作台
+<img width="1280" height="765" alt="image" src="https://github.com/user-attachments/assets/e8fa05a9-3f7f-4823-843a-83bb00f703b5" /># EvalLab · 内容评测工作台
 
 上传评价体系、样本和模型输出，由模型逐条找问题，程序按固定规则算分，生成可复现、可对比的评测报告，并给出提示词优化策略。本地运行，无需安装依赖。
 
