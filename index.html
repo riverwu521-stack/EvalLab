@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EvalLab · 内容评测工作台</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <canvas id="bgGrid" aria-hidden="true"></canvas>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand"><span class="brand-mark"><i></i>E</span><div><strong>EVAL<span>LAB</span></strong><small>CONTENT EVALUATION</small></div></div>
+        <nav class="nav-list">
+          <button class="nav-item active" data-view="create"><span class="nav-symbol">＋</span><span>新建评测</span><i>01</i></button>
+          <button class="nav-item" data-view="history"><span class="nav-symbol">◫</span><span>历史评测</span><i>02</i></button>
+          <button class="nav-item" data-view="rubric"><span class="nav-symbol">⌘</span><span>评价体系</span><i>03</i></button>
+        </nav>
+        <div class="sidebar-footer">
+          <div class="service-line" id="gatewayStatus"><span></span><div><b>MODEL GATEWAY</b><small>检测中…</small></div></div>
+          <div class="user-line"><span>EL</span><b>本地用户</b></div>
+        </div>
+      </aside>
+
+      <main class="main-content">
+        <header class="topbar">
+          <div class="top-path">EVALLAB <em>/</em> <span id="pathLabel">新建评测</span></div>
+          <div class="top-right"><span class="connection" id="topConnection"><i></i>CHECKING</span><span id="clock" class="mono">--:--:--</span></div>
+        </header>
+
+        <section class="view active-view" data-view-panel="create">
+          <div class="page-hero"><div><div class="kicker">01 / NEW EVALUATION</div><h1>构建一次评测</h1><p>先在本地导入评价体系和内容，再选择模型运行评测。评价体系由模型完整阅读，类型可从历史复用，也可全新创建。</p></div></div>
+          <div class="create-grid">
+            <div class="form-stack">
+              <section class="card">
+                <header class="card-head"><span class="card-index">A</span><div><h2>评测类型</h2><p>沿用已有类型会带入它的输入结构和评价体系</p></div></header>
+                <div id="typeOptions" class="type-grid"></div>
+                <label class="field"><span class="field-label">本次评测名称</span><input id="evaluationName" class="input input-lg" placeholder="例如：热点创作方向第四版评测" /></label>
+              </section>
+
+              <section class="card">
+                <header class="card-head"><span class="card-index">B</span><div><h2>评价体系</h2><p id="rubricHint">评测类型绑定的评分标准</p></div></header>
+                <div id="rubricSlot"></div>
+              </section>
+
+              <section class="card">
+                <header class="card-head"><span class="card-index">C</span><div><h2>输入内容</h2><p>本地导入 .md / .txt / .json / .jsonl 文件，按样本标题或 ID 对齐；此步骤不调用模型网关</p></div></header>
+                <div id="inputSlots" class="slot-grid"></div>
+                <div id="sampleScan" class="sample-scan"></div>
+              </section>
+
+              <section class="card">
+                <header class="card-head"><span class="card-index">D</span><div><h2>被评测的提示词 <small class="optional-tag">可选</small></h2><p>填写生成这批内容所用的提示词并打上版本标签，报告和历史会按标签区分提示词版本；评分本身不会看到提示词</p></div></header>
+                <div class="inline-fields">
+                  <label class="field"><span class="field-label">版本标签</span><input id="promptTag" class="input" placeholder="例如 创作方向 V1.0.8" /></label>
+                  <label class="field"><span class="field-label">导入文件（可选）</span><span class="slot slot-inline prompt-file"><input type="file" id="promptFile" accept=".md,.markdown,.txt,.json" /><span class="slot-file"><i>↥</i><b id="promptFileName">选择 .md / .txt 文件</b></span></span></label>
+                </div>
+                <label class="field"><span class="field-label">提示词原文</span><textarea id="promptText" class="input prompt-text" rows="6" placeholder="粘贴提示词原文，或从上方导入文件"></textarea></label>
+                <label class="check-line"><input type="checkbox" id="promptStrategy" checked /><span>评测完成后，根据发现的问题生成提示词优化策略</span></label>
+              </section>
+
+              <section class="card">
+                <header class="card-head"><span class="card-index">E</span><div><h2>评测模型</h2><p>仅在点击“运行评测”后调用模型网关；可搜索或直接填写网关支持的模型名</p></div></header>
+                <div class="model-picker">
+                  <button id="modelTrigger" class="model-trigger" type="button"><span class="model-dot"></span><span><b id="modelName">未选择</b><small id="modelMeta">—</small></span><em>▾</em></button>
+                  <div id="modelPanel" class="model-panel" hidden>
+                    <input id="modelSearch" class="input" placeholder="搜索模型，或输入模型名后回车使用" />
+                    <div id="modelList" class="model-list"></div>
+                  </div>
+                </div>
+                <div class="inline-fields">
+                  <label class="field"><span class="field-label">并发数</span><select id="concurrency" class="input"><option>1</option><option>2</option><option>4</option><option selected>6</option><option>8</option></select></label>
+                  <label class="field"><span class="field-label">评测样本数</span><input id="sampleLimit" class="input" type="number" min="1" placeholder="默认全部" /></label>
+                </div>
+                <label class="check-line"><input type="checkbox" id="calibrate" checked /><span>使用统一评分细则（依据评价体系和数据源制定；同一评价体系 + 同一批数据源只制定一次，之后的评测自动沿用，保证多次评测可比）</span></label>
+                <label class="check-line"><input type="checkbox" id="regenGuide" /><span>重新制定评分细则（生成新版本；与旧版本细则下的评测对比时会提示尺度不同）</span></label>
+                <label class="check-line"><input type="checkbox" id="fastMode" /><span>快速模式：逐样本评分时不让模型深度思考（实测约快 4 倍，能抓住严重问题，但会漏掉较细的问题，适合初筛）</span></label>
+              </section>
+            </div>
+
+            <aside class="side-stack">
+              <section class="card summary-card">
+                <div class="kicker">RUN SUMMARY</div>
+                <div id="runSummary" class="summary-list"></div>
+                <button class="run-button" id="runEvaluation"><span>运行评测</span><i>→</i></button>
+                <p class="note" id="runNote"></p>
+              </section>
+              <section class="card gateway-card">
+                <div class="progress-head"><div class="kicker">MODEL GATEWAY</div><button class="text-toggle" id="gatewayToggle" type="button">配置</button></div>
+                <div id="gatewayForm" hidden>
+                  <label class="field"><span class="field-label">网关地址（OpenAI 兼容，到 /v1 为止）</span><input id="gatewayBase" class="input" placeholder="https://xxx.example.com/v1" /></label>
+                  <label class="field"><span class="field-label">API Key</span><input id="gatewayKey" class="input" type="password" placeholder="已保存时留空表示不修改" /></label>
+                  <label class="field"><span class="field-label">鉴权方式</span><select id="gatewayAuth" class="input">
+                    <option value="Authorization|Bearer ">Authorization: Bearer &lt;key&gt;</option>
+                    <option value="X-Api-Key|">X-Api-Key: &lt;key&gt;</option>
+                    <option value="custom">自定义请求头</option>
+                  </select></label>
+                  <div class="inline-fields" id="gatewayCustom" hidden>
+                    <label class="field"><span class="field-label">请求头名称</span><input id="gatewayHeader" class="input" placeholder="例如 api-key" /></label>
+                    <label class="field"><span class="field-label">值前缀</span><input id="gatewayPrefix" class="input" placeholder="例如 Bearer （可留空）" /></label>
+                  </div>
+                  <div class="inline-actions"><button class="ghost-button" id="gatewayTest" type="button">测试连接</button><button class="ghost-button primary-ghost" id="gatewaySave" type="button">保存</button></div>
+                  <pre id="gatewayResult" class="gateway-result"></pre>
+                  <p class="note">密钥只写入本机 <code>数据/eval_config.json</code>（权限 600），不会出现在页面源码或评测报告里。</p>
+                </div>
+              </section>
+              <section class="card progress-card" id="progressCard" hidden>
+                <div class="progress-head"><div class="kicker" id="progressState">RUNNING</div><div class="inline-actions top0"><button class="ghost-button" id="openRunReport" hidden>查看报告 →</button><button class="ghost-button" id="stopRun">停止</button></div></div>
+                <div class="progress-num"><strong id="progressText">0 / 0</strong><span id="progressMeta"></span></div>
+                <div class="progress-track"><i id="progressBar"></i></div>
+                <div id="progressSteps" class="progress-steps"></div>
+                <div id="progressLog" class="progress-log"></div>
+              </section>
+            </aside>
+          </div>
+        </section>
+
+        <section class="view" data-view-panel="history">
+          <div class="page-hero"><div><div class="kicker">02 / HISTORY</div><h1>历史评测</h1><p>所有评测按时间排列，可按类型筛选。打开报告查看结果，或以该评测的类型发起新一轮评测。</p></div>
+            <div class="history-tools"><select id="historyType" class="input"></select><select id="historySort" class="input"><option value="new">最新在前</option><option value="old">最早在前</option><option value="high">总分从高到低</option><option value="low">总分从低到高</option></select></div></div>
+          <div id="historyGroups"></div>
+        </section>
+        <div class="modal" id="confirmModal" hidden><div class="modal-box card"><div class="kicker">CONFIRM</div><h3 id="confirmTitle"></h3><p id="confirmText"></p>
+          <div class="inline-actions"><button class="ghost-button" data-confirm="no">取消</button><button class="ghost-button danger-button" data-confirm="yes">确认删除</button></div></div></div>
+
+        <section class="view" data-view-panel="report"><div id="reportRoot"></div></section>
+
+        <section class="view" data-view-panel="rubric">
+          <div class="page-hero"><div><div class="kicker">03 / RUBRIC</div><h1>评价体系</h1><p>每个评测类型绑定一套体系，评测与报告都按体系中的评价对象和指标执行。</p></div><div class="history-tools"><select id="rubricSelect" class="input select-inline"></select><button class="ghost-button danger-button" id="deleteRubric" type="button">删除此体系</button></div></div>
+          <div id="rubricRoot"></div>
+        </section>
+      </main>
+    </div>
+    <div class="toast" id="toast"></div>
+    <script src="./data.js"></script>
+    <script src="./app.js"></script>
+  </body>
+</html>

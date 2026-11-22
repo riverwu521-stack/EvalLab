@@ -1,0 +1,26 @@
+{
+  "_说明": "复制到本副本的 数据/eval_config.json 后填写，勿提交实际配置。api_base 填 OpenAI 兼容网关地址（到 /v1 为止），api_key 也可改用环境变量 EVAL_API_KEY。models 用于网关不提供 /models 时的下拉列表，id 必须与网关的模型名一致。",
+  "api_base": "https://your-gateway.example.com/v1",
+  "api_key": "",
+  "timeout": 180,
+  "extra_headers": {},
+  "models": [
+    { "id": "claude-opus-4.6", "name": "Claude Opus 4.6", "group": "海外" },
+    { "id": "claude-opus-4.5", "name": "Claude Opus 4.5", "group": "海外" },
+    { "id": "claude-sonnet-4.6", "name": "Claude Sonnet 4.6", "group": "海外" },
+    { "id": "claude-sonnet-4.5", "name": "Claude Sonnet 4.5", "group": "海外" },
+    { "id": "claude-haiku-4.5", "name": "Claude Haiku 4.5", "group": "海外" },
+    { "id": "gemini-3.1-pro", "name": "Gemini 3.1 Pro", "group": "海外" },
+    { "id": "gemini-3.0-pro", "name": "Gemini 3.0 Pro", "group": "海外" },
+    { "id": "gemini-3.0-flash", "name": "Gemini 3.0 Flash", "group": "海外" },
+    { "id": "gpt-5.4", "name": "GPT-5.4", "group": "海外" },
+    { "id": "gpt-5.3-codex", "name": "GPT-5.3 Codex", "group": "海外" },
+    { "id": "gpt-5.2-codex", "name": "GPT-5.2 Codex", "group": "海外" },
+    { "id": "minimax-m2.7", "name": "MiniMax M2.7", "group": "国内" },
+    { "id": "minimax-m2.5", "name": "MiniMax M2.5", "group": "国内" },
+    { "id": "kimi-k2.5", "name": "Kimi K2.5", "group": "国内" },
+    { "id": "glm-5", "name": "GLM-5", "group": "国内" },
+    { "id": "glm-5-turbo", "name": "GLM-5-Turbo", "group": "国内" },
+    { "id": "glm-4.7", "name": "GLM-4.7", "group": "国内" }
+  ]
+}

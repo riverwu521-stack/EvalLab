@@ -1,0 +1,16 @@
+# 本机运行产生的数据，含网关配置和 API Key，不要提交
+数据/
+eval_config.json
+.env
+*.log
+server.log
+hidden.json
+
+# 缓存与系统文件
+__pycache__/
+*.pyc
+.DS_Store
+Thumbs.db
+
+# 本地打包产物
+发布包/
